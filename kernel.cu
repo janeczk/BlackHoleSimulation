@@ -2,7 +2,7 @@
 #include <cmath>
 #include "device_launch_parameters.h"
 
-#define G 6.67430e-11  // Sztuczna "stała grawitacyjna" (większa wartość = mocniejsze przyciąganie)
+#define G 6.67430e-11  // stała grawitacyjna
 #define BLACK_HOLE_MASS 5.23123e+17  
 #define EPSILON 1e-6f  // Minimalna odległość od środka, żeby uniknąć dzielenia przez 0
 
