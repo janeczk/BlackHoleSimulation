@@ -1,48 +1,43 @@
-﻿#include "device_launch_parameters.h"
-#include <cuda_runtime.h>
+﻿#include <cuda_runtime.h>
 #include <cmath>
-#include <iostream>
+#include "device_launch_parameters.h"
 
-#define G 6.67430e-11
-#define M 1.0
-#define RS (2 * G * M)
+#define G 6.67430e-11  // Sztuczna "stała grawitacyjna" (większa wartość = mocniejsze przyciąganie)
+#define BLACK_HOLE_MASS 5.23123e+17  
+#define EPSILON 1e-6f  // Minimalna odległość od środka, żeby uniknąć dzielenia przez 0
 
-__device__ void schwarzschild_geodesic(float3* pos, float3* vel, float dt) {
-    float r = sqrt(pos->x * pos->x + pos->y * pos->y + pos->z * pos->z);
-    if (r <= RS) return;
-
-    float acc = -G * M / (r * r);
-    vel->x += acc * pos->x / r * dt;
-    vel->y += acc * pos->y / r * dt;
-    vel->z += acc * pos->z / r * dt;
-
-    pos->x += vel->x * dt;
-    pos->y += vel->y * dt;
-    pos->z += vel->z * dt;
-}
-
-__global__ void trace_rays(float3* positions, float3* velocities, int num_rays, float dt, int steps) {
+__global__ void updateKernel(float3* positions, float3* velocities, int num_rays, float dt) {
     int i = blockIdx.x * blockDim.x + threadIdx.x;
     if (i >= num_rays) return;
 
-    for (int step = 0; step < steps; step++) {
-        schwarzschild_geodesic(&positions[i], &velocities[i], dt);
-    }
+    float3 pos = positions[i];
+    float3 vel = velocities[i];
+
+    // Obliczanie odległości od czarnej dziury (zakładamy, że jest w (0,0))
+    float r = sqrtf(pos.x * pos.x + pos.y * pos.y) + EPSILON; 
+
+    // Przyciąganie grawitacyjne: siła działa w kierunku środka (0,0)
+    float force = G * BLACK_HOLE_MASS / (r * r);
+    float3 acceleration = { -force * (pos.x / r), -force * (pos.y / r), 0.0f };
+
+    // Aktualizacja prędkości i pozycji
+    vel.x += acceleration.x * dt;
+    vel.y += acceleration.y * dt;
+    
+    pos.x += vel.x * dt;
+    pos.y += vel.y * dt;
+
+    // Zapis wyników
+    positions[i] = pos;
+    velocities[i] = vel;
 }
 
-extern "C" __declspec(dllexport) void launch_kernel(float3* h_positions, float3* h_velocities, int num_rays, float dt, int steps) {
-    float3* d_positions, * d_velocities;
-    cudaMalloc(&d_positions, num_rays * sizeof(float3));
-    cudaMalloc(&d_velocities, num_rays * sizeof(float3));
+extern "C" void update_positions(float3* d_positions, float3* d_velocities, float3* h_positions, int num_rays, float dt) {
+    int threadsPerBlock = 256;
+    int blocksPerGrid = (num_rays + threadsPerBlock - 1) / threadsPerBlock;
 
-    cudaMemcpy(d_positions, h_positions, num_rays * sizeof(float3), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_velocities, h_velocities, num_rays * sizeof(float3), cudaMemcpyHostToDevice);
+    updateKernel<<<blocksPerGrid, threadsPerBlock>>>(d_positions, d_velocities, num_rays, dt);
 
-    trace_rays <<<(num_rays + 255) / 256, 256 >>> (d_positions, d_velocities, num_rays, dt, steps);
-    cudaDeviceSynchronize();
-
+    // Pobranie nowych pozycji z GPU do CPU
     cudaMemcpy(h_positions, d_positions, num_rays * sizeof(float3), cudaMemcpyDeviceToHost);
-
-    cudaFree(d_positions);
-    cudaFree(d_velocities);
 }
