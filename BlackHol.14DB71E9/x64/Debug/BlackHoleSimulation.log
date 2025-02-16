@@ -1,12 +1,12 @@
 ﻿  Source.cpp
-C:\Users\jasdw\source\repos\BlackHoleSimulation\Source.cpp(67,31): warning C4244: "inicjowanie": konwersja z "T" do "float", możliwa utrata danych
-C:\Users\jasdw\source\repos\BlackHoleSimulation\Source.cpp(67,31): warning C4244:         with
-C:\Users\jasdw\source\repos\BlackHoleSimulation\Source.cpp(67,31): warning C4244:         [
-C:\Users\jasdw\source\repos\BlackHoleSimulation\Source.cpp(67,31): warning C4244:             T=int
-C:\Users\jasdw\source\repos\BlackHoleSimulation\Source.cpp(67,31): warning C4244:         ]
-C:\Users\jasdw\source\repos\BlackHoleSimulation\Source.cpp(68,31): warning C4244: "inicjowanie": konwersja z "T" do "float", możliwa utrata danych
-C:\Users\jasdw\source\repos\BlackHoleSimulation\Source.cpp(68,31): warning C4244:         with
-C:\Users\jasdw\source\repos\BlackHoleSimulation\Source.cpp(68,31): warning C4244:         [
-C:\Users\jasdw\source\repos\BlackHoleSimulation\Source.cpp(68,31): warning C4244:             T=int
-C:\Users\jasdw\source\repos\BlackHoleSimulation\Source.cpp(68,31): warning C4244:         ]
+C:\Users\jasdw\source\repos\BlackHoleSimulation\Source.cpp(69,31): warning C4244: "inicjowanie": konwersja z "T" do "float", możliwa utrata danych
+C:\Users\jasdw\source\repos\BlackHoleSimulation\Source.cpp(69,31): warning C4244:         with
+C:\Users\jasdw\source\repos\BlackHoleSimulation\Source.cpp(69,31): warning C4244:         [
+C:\Users\jasdw\source\repos\BlackHoleSimulation\Source.cpp(69,31): warning C4244:             T=int
+C:\Users\jasdw\source\repos\BlackHoleSimulation\Source.cpp(69,31): warning C4244:         ]
+C:\Users\jasdw\source\repos\BlackHoleSimulation\Source.cpp(70,31): warning C4244: "inicjowanie": konwersja z "T" do "float", możliwa utrata danych
+C:\Users\jasdw\source\repos\BlackHoleSimulation\Source.cpp(70,31): warning C4244:         with
+C:\Users\jasdw\source\repos\BlackHoleSimulation\Source.cpp(70,31): warning C4244:         [
+C:\Users\jasdw\source\repos\BlackHoleSimulation\Source.cpp(70,31): warning C4244:             T=int
+C:\Users\jasdw\source\repos\BlackHoleSimulation\Source.cpp(70,31): warning C4244:         ]
   BlackHoleSimulation.vcxproj -> C:\Users\jasdw\source\repos\BlackHoleSimulation\x64\Debug\BlackHoleSimulation.exe

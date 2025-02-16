@@ -9,13 +9,13 @@
 
 #define WIN_SIZE 1200
 #define NUM_RAYS 2000
-#define DT 0.0002f
-#define RADIUS 150.0f
+#define DT 0.0006f
+#define RADIUS 400.0f
 #define PI 3.14159265359f
 #define NOISE 20.0f
-#define VELOCITY_NOISE 30.0f
+#define VELOCITY_NOISE 200.0f
 #define VELOCITY 500.0f
-#define NUM_BLACK_HOLES 1// Liczba czarnych dziur
+#define NUM_BLACK_HOLES 3// Liczba czarnych dziur
 #define SCALE 0.5
 
 sf::Vector2i lastMousePos;
@@ -33,7 +33,9 @@ int main() {
 
     // Pozycje czarnych dziur
     BlackHole blackHoles[NUM_BLACK_HOLES] = {
-        BlackHole(5.23123e+17f, { -200.0f, 0.0f, 0.0f })   // Druga czarna dziura
+        BlackHole(5.23123e+17f, { -200.0f, 0.0f, 0.0f }),
+        BlackHole(5.23123e+17f, { 200.0f, 0.0f, 0.0f }),
+        BlackHole(5.23123e+19f, { 100.0f, 100.0f, 0.0f })   // Druga czarna dziura
     };
 
     for (int i = 0; i < NUM_RAYS; i++) {
