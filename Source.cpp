@@ -1,18 +1,25 @@
 ﻿#include "SFML/Graphics.hpp"
+#include "SFML/Window.hpp"
+#include "SFML/System.hpp"
 #include "Photon.h"
 #include "BlackHole.h"
+#include "Camera.h"
 #include <iostream>
 #include <random>
 
 #define WIN_SIZE 1200
 #define NUM_RAYS 2000
-#define DT 0.002f
+#define DT 0.0002f
 #define RADIUS 150.0f
 #define PI 3.14159265359f
 #define NOISE 20.0f
 #define VELOCITY_NOISE 30.0f
 #define VELOCITY 500.0f
-#define NUM_BLACK_HOLES 2  // Liczba czarnych dziur
+#define NUM_BLACK_HOLES 1// Liczba czarnych dziur
+#define SCALE 0.5
+
+sf::Vector2i lastMousePos;
+bool mouseHeld = false;
 
 int main() {
     std::random_device rd;
@@ -21,11 +28,12 @@ int main() {
     std::uniform_real_distribution<float> vel_noise_dist(-VELOCITY_NOISE, VELOCITY_NOISE);
 
     Photon* photons = new Photon[NUM_RAYS];
+    
+    Camera camera({ 0.0f, 0.0f, 1000.0f });
 
     // Pozycje czarnych dziur
     BlackHole blackHoles[NUM_BLACK_HOLES] = {
-        BlackHole(5.23123e+17f, { -200.0f, 0.0f, 0.0f }), // Pierwsza czarna dziura
-        BlackHole(5.23123e+17f, { 200.0f, 0.0f, 0.0f })   // Druga czarna dziura
+        BlackHole(5.23123e+17f, { -200.0f, 0.0f, 0.0f })   // Druga czarna dziura
     };
 
     for (int i = 0; i < NUM_RAYS; i++) {
@@ -42,29 +50,56 @@ int main() {
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed)
                 window.close();
-        }
 
+            // Aktywacja myszy po kliknięciu
+            if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
+                mouseHeld = true;
+                lastMousePos = sf::Mouse::getPosition(window);
+            }
+
+            if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left) {
+                mouseHeld = false;
+            }
+
+            // Obsługa ruchu myszy
+            if (event.type == sf::Event::MouseMoved && mouseHeld) {
+                sf::Vector2i mousePos = sf::Mouse::getPosition(window);
+                float offsetX = mousePos.x - lastMousePos.x;
+                float offsetY = mousePos.y - lastMousePos.y;
+                lastMousePos = mousePos;
+
+                camera.processMouseMovement(offsetX, offsetY);
+
+                std::cout << "Yaw: " << camera.yaw << " Pitch: " << camera.pitch << std::endl;
+            }
+        }
         window.clear(sf::Color(10, 10, 30));
 
         // Rysowanie czarnych dziur
         for (int i = 0; i < NUM_BLACK_HOLES; i++) {
             blackHoles[i].updatePosition(DT, blackHoles, NUM_BLACK_HOLES);
 
+            float2 screenPos = camera.project3DTo2D(blackHoles[i].getPosition());
+
             sf::CircleShape blackHoleShape(10);
             blackHoleShape.setOrigin(10, 10);
-            blackHoleShape.setPosition(WIN_SIZE / 2 + blackHoles[i].getPosition().x, WIN_SIZE / 2 + blackHoles[i].getPosition().y);
+            blackHoleShape.setPosition(screenPos.x,screenPos.y);
             blackHoleShape.setFillColor(sf::Color::Yellow);
             window.draw(blackHoleShape);
         }
 
-        // Aktualizacja fotonów
+        // Aktualizacja i rysowanie fotonów
         for (int i = 0; i < NUM_RAYS; i++) {
             photons[i].update(DT, blackHoles, NUM_BLACK_HOLES);
+
+            float2 screenPos = camera.project3DTo2D(photons[i].position);
+
             sf::CircleShape pixel(1);
-            pixel.setPosition(WIN_SIZE / 2 + photons[i].position.x, WIN_SIZE / 2 + photons[i].position.y);
+            pixel.setPosition(screenPos.x,screenPos.y);
             pixel.setFillColor(sf::Color::White);
             window.draw(pixel);
         }
+
 
         window.display();
     }
