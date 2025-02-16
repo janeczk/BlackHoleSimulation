@@ -4,13 +4,12 @@
 #include <iostream>
 #include <random>
 
-
 #define WIN_SIZE 1200
 #define NUM_RAYS 2000
-#define DT 0.005f
+#define DT 0.05f
 #define RADIUS 150.0f
 #define PI 3.14159265359f
-#define NOISE 30.0f
+#define NOISE 1000.0f
 #define VELOCITY_NOISE 30.0f
 #define VELOCITY 500.0f
 
@@ -21,7 +20,9 @@ int main() {
     std::uniform_real_distribution<float> vel_noise_dist(-VELOCITY_NOISE, VELOCITY_NOISE);
 
     Photon* photons = new Photon[NUM_RAYS];
-    BlackHole blackHole(5.23123e+17f);
+    float3 blackHolePos = { 0.0f, 0.0f, 0.0f };  // Ustawienie pozycji czarnej dziury na środek okna
+    BlackHole blackHole(5.23123e+17f, blackHolePos);  // Zmiana konstrukcji czarnej dziury
+
 
     for (int i = 0; i < NUM_RAYS; i++) {
         float angle = (2 * PI * i) / NUM_RAYS;
@@ -45,15 +46,16 @@ int main() {
 
         window.clear(sf::Color(10, 10, 30));
 
+        // Rysowanie czarnej dziury
         sf::CircleShape blackHoleShape(10);
         blackHoleShape.setOrigin(10, 10);
-        blackHoleShape.setPosition(WIN_SIZE / 2, WIN_SIZE / 2);
+        blackHoleShape.setPosition(blackHolePos.x+WIN_SIZE/2, blackHolePos.y+WIN_SIZE / 2);
         blackHoleShape.setFillColor(sf::Color::Black);
         window.draw(blackHoleShape);
 
+        // Aktualizacja fotonów
         for (int i = 0; i < NUM_RAYS; i++) {
-            photons[i].update(DT, blackHole.getMass());
-
+            photons[i].update(DT, blackHole.getMass(),blackHole.getPosition());
             sf::CircleShape pixel(1);
             pixel.setPosition(WIN_SIZE / 2 + photons[i].position.x, WIN_SIZE / 2 + photons[i].position.y);
             pixel.setFillColor(sf::Color::White);
