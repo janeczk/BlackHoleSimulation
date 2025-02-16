@@ -2,6 +2,7 @@
 #define PHOTON_H
 
 #include <cuda_runtime.h>
+#include "BlackHole.h"
 
 class Photon {
 public:
@@ -12,7 +13,7 @@ public:
 
     __host__ __device__ Photon(float3 pos, float3 vel) : position(pos), velocity(vel) {}
 
-    __host__ __device__ void update(float dt, float blackHoleMass, float3 blackHolePosition);  // Zmiana w funkcji update
+    __host__ __device__ void update(float dt, BlackHole* blackHoles, int numBlackHoles);  // Zmiana w funkcji update
 };
 
 #endif // PHOTON_H

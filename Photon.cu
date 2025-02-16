@@ -4,25 +4,24 @@
 #define G 6.67430e-11f
 #define EPSILON 1e-6f
 
-__host__ __device__ void Photon::update(float dt, float blackHoleMass, float3 blackHolePosition) {
-    // Obliczanie wektora odleg³oœci miêdzy fotonem a czarn¹ dziur¹
-    float dx = position.x - blackHolePosition.x;
-    float dy = position.y - blackHolePosition.y;
+__host__ __device__ void Photon::update(float dt, BlackHole* blackHoles, int numBlackHoles) {
+    float3 totalAcceleration = { 0.0f, 0.0f, 0.0f };
 
-    // Obliczanie odleg³oœci r miêdzy fotonem a czarn¹ dziur¹
-    float r = sqrtf(dx * dx + dy * dy) + EPSILON;
+    for (int i = 0; i < numBlackHoles; i++) {
+        float3 blackHolePos = blackHoles[i].getPosition();
+        float blackHoleMass = blackHoles[i].getMass();
 
-    // Przyci¹ganie grawitacyjne - obliczanie si³y przyci¹gania
-    float force = G * blackHoleMass / (r * r);
+        float dx = position.x - blackHolePos.x;
+        float dy = position.y - blackHolePos.y;
+        float r = sqrtf(dx * dx + dy * dy) + EPSILON;
 
-    // Obliczanie przyspieszenia fotonu na podstawie si³y grawitacyjnej
-    float3 acceleration = { -force * (dx / r), -force * (dy / r), 0.0f };
+        float force = G * blackHoleMass / (r * r);
+        totalAcceleration.x += -force * (dx / r);
+        totalAcceleration.y += -force * (dy / r);
+    }
 
-    // Aktualizacja prêdkoœci na podstawie przyspieszenia
-    velocity.x += acceleration.x * dt;
-    velocity.y += acceleration.y * dt;
-
-    // Aktualizacja pozycji fotonu na podstawie prêdkoœci
+    velocity.x += totalAcceleration.x * dt;
+    velocity.y += totalAcceleration.y * dt;
     position.x += velocity.x * dt;
     position.y += velocity.y * dt;
 }

@@ -1,7 +1,6 @@
 ﻿#include <cuda_runtime.h>
 #include <cmath>
 #include "device_launch_parameters.h"
-#include "Photon.h"
 
 #define G 6.67430e-11  // stała grawitacyjna
 #define BLACK_HOLE_MASS 5.23123e+17  
@@ -33,8 +32,6 @@ __global__ void updateKernel(float3* positions, float3* velocities, int num_rays
     velocities[i] = vel;
 }
 
-
-
 extern "C" void update_positions(float3* d_positions, float3* d_velocities, float3* h_positions, int num_rays, float dt) {
     int threadsPerBlock = 256;
     int blocksPerGrid = (num_rays + threadsPerBlock - 1) / threadsPerBlock;
@@ -44,4 +41,3 @@ extern "C" void update_positions(float3* d_positions, float3* d_velocities, floa
     // Pobranie nowych pozycji z GPU do CPU
     cudaMemcpy(h_positions, d_positions, num_rays * sizeof(float3), cudaMemcpyDeviceToHost);
 }
-
