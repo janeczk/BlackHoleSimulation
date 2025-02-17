@@ -5,9 +5,13 @@
 #include <iostream>
 #include <cstdlib>
 
-#define SPAWN_INTERVAL 50  // Co ile klatek dodajemy nowe fotony
-#define MAX_PHOTONS 50000   // Maksymalna liczba fotonów
+#define SPAWN_INTERVAL 10  // Co ile klatek dodajemy nowe fotony
+#define MAX_PHOTONS 500000   // Maksymalna liczba fotonów
 #define PHOTONS_AT_ONCE 128  // Można zmieniać na dowolną liczbę, np. 8, 16, 32 itd.
+#define LIGHT_SOURCE_LOC { fieldWidth / 2.0f, fieldHeight / 2.0f - 200.0f, 0.0f }
+#define BLACK_HOLE_LOC { fieldWidth / 2.0f , fieldHeight / 2.0f, 0.0f }
+#define BH_MASS 1.0e+4f
+#define VELOCITY 400.0f
 using uint8_t = unsigned char;
 
 struct Vec3 {
@@ -33,7 +37,7 @@ struct Photon {
     __device__ void update(float dt, Vec3 blackHolePos, float blackHoleMass) {
         Vec3 direction = blackHolePos - position;
         float distSq = direction.x * direction.x + direction.y * direction.y + direction.z * direction.z;
-        float force = blackHoleMass / (distSq + 0.001f); // Unikamy dzielenia przez 0
+        float force = blackHoleMass / (distSq + 0.000001f); // Unikamy dzielenia przez 0
         velocity = velocity + direction * force * dt;
         position = position + velocity * dt;
     }
@@ -56,8 +60,8 @@ void cudaInit(size_t width, size_t height) {
     cudaMalloc(&colorField, fieldWidth * fieldHeight * 4 * sizeof(uint8_t));
 
     // Ustawienie stałej pozycji czarnej dziury
-    Vec3 h_blackHolePos = { fieldWidth / 2.0f, fieldHeight / 2.0f, 0.0f };
-    float h_blackHoleMass = 1.0e+4f;
+    Vec3 h_blackHolePos = BLACK_HOLE_LOC;
+    float h_blackHoleMass = BH_MASS;
     cudaMemcpyToSymbol(blackHolePos, &h_blackHolePos, sizeof(Vec3));
     cudaMemcpyToSymbol(blackHoleMass, &h_blackHoleMass, sizeof(float));
 }
@@ -99,8 +103,8 @@ void computeField(uint8_t* result, float dt, int frame) {
         for (int i = 0; i < PHOTONS_AT_ONCE; i++) {
             float angle = (i * 2.0f * 3.14159265359f) / PHOTONS_AT_ONCE; // Równomierny rozkład wokół źródła
 
-            h_photons[i].position = { fieldWidth / 2.0f, fieldHeight / 2.0f - 200.0f, 0.0f };
-            h_photons[i].velocity = { cos(angle) * 300.0f, sin(angle) * 300.0f, 0.0f };
+            h_photons[i].position = LIGHT_SOURCE_LOC;
+            h_photons[i].velocity = { cos(angle) * VELOCITY, sin(angle) * VELOCITY, 0.0f };
         }
 
         // Nadpisujemy stare fotony, jeśli osiągnęliśmy limit

@@ -9,6 +9,7 @@
 #define WINDOW_HEIGHT 900
 #define FIELD_WIDTH (WINDOW_WIDTH / SCALE)
 #define FIELD_HEIGHT (WINDOW_HEIGHT / SCALE)
+#define DT 0.0005f
 
 void computeField(uint8_t* result, float dt, int frame);
 void cudaInit(size_t xSize, size_t ySize);
@@ -39,7 +40,7 @@ int main() {
                 window.close();
         }
 
-        computeField(pixelBuffer.data(), 0.0005f, frame);
+        computeField(pixelBuffer.data(), DT, frame);
         texture.update(pixelBuffer.data());
         sprite.setTexture(texture);
         sprite.setScale({ SCALE, SCALE });
