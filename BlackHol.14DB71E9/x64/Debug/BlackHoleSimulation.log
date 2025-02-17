@@ -1,8 +1,0 @@
-﻿  Compiling CUDA source file kernel.cu...
-  
-  C:\Users\jasdw\source\repos\BlackHoleSimulation>"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.8\bin\nvcc.exe" -gencode=arch=compute_75,code=\"sm_75,compute_75\" -gencode=arch=compute_52,code=\"sm_52,compute_52\" --use-local-env -ccbin "C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.42.34433\bin\HostX64\x64" -x cu   -IC:\Users\jasdw\source\repos\BlackHoleSimulation\include -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.8\include" -I"C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v12.8\include"  -G   --keep-dir BlackHol.14DB71E9\x64\Debug  -maxrregcount=0    --machine 64 --compile -cudart static  -g  -DWIN32 -DWIN64 -D_DEBUG -D_CONSOLE -D_MBCS -Xcompiler "/EHsc /W3 /nologo /Od /FS /Zi /RTC1 /MDd " -Xcompiler "/FdBlackHol.14DB71E9\x64\Debug\vc143.pdb" -o C:\Users\jasdw\source\repos\BlackHoleSimulation\BlackHol.14DB71E9\x64\Debug\kernel.cu.obj "C:\Users\jasdw\source\repos\BlackHoleSimulation\kernel.cu" 
-CUDACOMPILE : nvcc warning : Support for offline compilation for architectures prior to '<compute/sm/lto>_75' will be removed in a future release (Use -Wno-deprecated-gpu-targets to suppress warning).
-  kernel.cu
-  tmpxft_000059b0_00000000-7_kernel.compute_52.cudafe1.cpp
-  Source.cpp
-  BlackHoleSimulation.vcxproj -> C:\Users\jasdw\source\repos\BlackHoleSimulation\x64\Debug\BlackHoleSimulation.exe
