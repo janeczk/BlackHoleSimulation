@@ -60,6 +60,7 @@
     <CudaCompile>
       <TargetMachinePlatform>64</TargetMachinePlatform>
       <Include>%(Include)</Include>
+      <CodeGeneration>compute_75,sm_75;%(CodeGeneration)</CodeGeneration>
     </CudaCompile>
     <CudaLink>
       <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -93,6 +94,7 @@
   <ItemGroup>
     <CudaCompile Include="BlackHole.cu" />
     <CudaCompile Include="kernel.cu" />
+    <CudaCompile Include="LightSource.cu" />
     <CudaCompile Include="Photon.cu" />
   </ItemGroup>
   <ItemGroup>
@@ -102,6 +104,7 @@
   <ItemGroup>
     <ClInclude Include="BlackHole.h" />
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="LightSource.h" />
     <ClInclude Include="Photon.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

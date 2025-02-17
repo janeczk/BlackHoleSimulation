@@ -1,112 +1,51 @@
-﻿#include "SFML/Graphics.hpp"
-#include "SFML/Window.hpp"
-#include "SFML/System.hpp"
-#include "Photon.h"
-#include "BlackHole.h"
-#include "Camera.h"
+﻿#include <SFML/Graphics.hpp>
+#include <chrono>
+#include <vector>
 #include <iostream>
-#include <random>
 
-#define WIN_SIZE 1200
-#define NUM_RAYS 2000
-#define DT 0.0006f
-#define RADIUS 400.0f
-#define PI 3.14159265359f
-#define NOISE 20.0f
-#define VELOCITY_NOISE 200.0f
-#define VELOCITY 500.0f
-#define NUM_BLACK_HOLES 3// Liczba czarnych dziur
-#define SCALE 0.5
+#define SCALE 2
+#define WINDOW_WIDTH 1600
+#define WINDOW_HEIGHT 900
+#define FIELD_WIDTH (WINDOW_WIDTH / SCALE)
+#define FIELD_HEIGHT (WINDOW_HEIGHT / SCALE)
 
-sf::Vector2i lastMousePos;
-bool mouseHeld = false;
+void computeField(uint8_t* result, float dt);
+void cudaInit(size_t xSize, size_t ySize);
+void cudaExit();
 
 int main() {
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_real_distribution<float> noise_dist(-NOISE, NOISE);
-    std::uniform_real_distribution<float> vel_noise_dist(-VELOCITY_NOISE, VELOCITY_NOISE);
+    cudaInit(FIELD_WIDTH, FIELD_HEIGHT);
+    sf::RenderWindow window(sf::VideoMode(WINDOW_WIDTH, WINDOW_HEIGHT), "Ray Tracing Black Hole");
 
-    Photon* photons = new Photon[NUM_RAYS];
-    
-    Camera camera({ 0.0f, 0.0f, 1000.0f });
+    auto start = std::chrono::system_clock::now();
+    auto end = std::chrono::system_clock::now();
 
-    // Pozycje czarnych dziur
-    BlackHole blackHoles[NUM_BLACK_HOLES] = {
-        BlackHole(5.23123e+17f, { -200.0f, 0.0f, 0.0f }),
-        BlackHole(5.23123e+17f, { 200.0f, 0.0f, 0.0f }),
-        BlackHole(5.23123e+19f, { 100.0f, 100.0f, 0.0f })   // Druga czarna dziura
-    };
-
-    for (int i = 0; i < NUM_RAYS; i++) {
-        float angle = (2 * PI * i) / NUM_RAYS;
-        float3 pos = { RADIUS * cos(angle) + noise_dist(gen), RADIUS * sin(angle) + noise_dist(gen), 0.0f };
-        float3 vel = { -sin(angle) * VELOCITY + vel_noise_dist(gen), cos(angle) * VELOCITY + vel_noise_dist(gen), 0.0f };
-        photons[i] = Photon(pos, vel);
-    }
-
-    sf::RenderWindow window(sf::VideoMode(WIN_SIZE, WIN_SIZE), "Schwarzschild Ray Tracing");
+    sf::Texture texture;
+    sf::Sprite sprite;
+    std::vector<sf::Uint8> pixelBuffer(FIELD_WIDTH * FIELD_HEIGHT * 4);
+    texture.create(FIELD_WIDTH, FIELD_HEIGHT);
 
     while (window.isOpen()) {
+        end = std::chrono::system_clock::now();
+        std::chrono::duration<float> diff = end - start;
+        start = end;
+
         sf::Event event;
         while (window.pollEvent(event)) {
             if (event.type == sf::Event::Closed)
                 window.close();
-
-            // Aktywacja myszy po kliknięciu
-            if (event.type == sf::Event::MouseButtonPressed && event.mouseButton.button == sf::Mouse::Left) {
-                mouseHeld = true;
-                lastMousePos = sf::Mouse::getPosition(window);
-            }
-
-            if (event.type == sf::Event::MouseButtonReleased && event.mouseButton.button == sf::Mouse::Left) {
-                mouseHeld = false;
-            }
-
-            // Obsługa ruchu myszy
-            if (event.type == sf::Event::MouseMoved && mouseHeld) {
-                sf::Vector2i mousePos = sf::Mouse::getPosition(window);
-                float offsetX = mousePos.x - lastMousePos.x;
-                float offsetY = mousePos.y - lastMousePos.y;
-                lastMousePos = mousePos;
-
-                camera.processMouseMovement(offsetX, offsetY);
-
-                std::cout << "Yaw: " << camera.yaw << " Pitch: " << camera.pitch << std::endl;
-            }
-        }
-        window.clear(sf::Color(10, 10, 30));
-
-        // Rysowanie czarnych dziur
-        for (int i = 0; i < NUM_BLACK_HOLES; i++) {
-            blackHoles[i].updatePosition(DT, blackHoles, NUM_BLACK_HOLES);
-
-            float2 screenPos = camera.project3DTo2D(blackHoles[i].getPosition());
-
-            sf::CircleShape blackHoleShape(10);
-            blackHoleShape.setOrigin(10, 10);
-            blackHoleShape.setPosition(screenPos.x,screenPos.y);
-            blackHoleShape.setFillColor(sf::Color::Yellow);
-            window.draw(blackHoleShape);
         }
 
-        // Aktualizacja i rysowanie fotonów
-        for (int i = 0; i < NUM_RAYS; i++) {
-            photons[i].update(DT, blackHoles, NUM_BLACK_HOLES);
+        computeField(pixelBuffer.data(), 0.005f);
+        texture.update(pixelBuffer.data());
+        sprite.setTexture(texture);
+        sprite.setScale({ SCALE, SCALE });
 
-            float2 screenPos = camera.project3DTo2D(photons[i].position);
-
-            sf::CircleShape pixel(1);
-            pixel.setPosition(screenPos.x,screenPos.y);
-            pixel.setFillColor(sf::Color::White);
-            window.draw(pixel);
-        }
-
-
+        window.clear(sf::Color::Black);
+        window.draw(sprite);
         window.display();
     }
 
-    delete[] photons;
+    cudaExit();
     return 0;
 }
-
